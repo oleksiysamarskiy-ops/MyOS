@@ -1,136 +1,145 @@
+import { useState } from 'react';
 import { AppDefinition } from '../types';
+import { appStore } from '../store/appStore';
 
 interface TopBarProps {
   activeApp: AppDefinition | null;
   openApps: AppDefinition[];
   titles: Record<string, string>;
+  hasApps: boolean;
   onHome: () => void;
   onSwitchApp: (id: string) => void;
   onCloseApp: (id: string) => void;
 }
 
-export function TopBar({
-  activeApp,
-  openApps,
-  titles,
-  onHome,
-  onSwitchApp,
-  onCloseApp,
-}: TopBarProps) {
+export function TopBar({ activeApp, openApps, titles, hasApps, onHome, onSwitchApp, onCloseApp }: TopBarProps) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare() {
+    const url = appStore.getShareUrl();
+    try { await navigator.clipboard.writeText(url); }
+    catch {
+      const ta = Object.assign(document.createElement('textarea'), { value: url });
+      Object.assign(ta.style, { position: 'fixed', opacity: '0' });
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <header
-      style={{
-        height: 48,
-        background: 'var(--bar-bg)',
-        borderBottom: '1px solid var(--border)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        display: 'flex',
-        alignItems: 'center',
-        paddingInline: 12,
-        gap: 8,
-        flexShrink: 0,
-        position: 'relative',
-        zIndex: 100,
-      }}
-    >
-      {/* Home / logo button */}
+    <header style={{
+      height: 'var(--bar-h)',
+      background: 'var(--surface)',
+      borderBottom: '1px solid var(--border)',
+      display: 'flex',
+      alignItems: 'center',
+      paddingInline: 16,
+      gap: 0,
+      flexShrink: 0,
+      zIndex: 100,
+    }}>
+
+      {/* Wordmark */}
       <button
         onClick={onHome}
-        title="Launcher (⌘H)"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '5px 12px',
-          borderRadius: 8,
-          background: activeApp ? 'transparent' : 'var(--accent-subtle)',
-          border: '1px solid var(--border)',
-          color: 'var(--text)',
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: 600,
-          flexShrink: 0,
-          transition: 'background 0.15s',
+          color: activeApp ? 'var(--text-2)' : 'var(--text)',
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          padding: '0 16px 0 0',
+          borderRight: '1px solid var(--border)',
+          height: '100%',
+          transition: 'color 0.15s',
         }}
-      >
-        ⌘ MyOS
-      </button>
+      >MyOS</button>
 
       {/* Tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 4,
-          flex: 1,
-          overflowX: 'auto',
-          alignItems: 'center',
-        }}
-      >
+      <div style={{ display: 'flex', flex: 1, overflowX: 'auto', height: '100%', alignItems: 'stretch' }}>
         {openApps.map((app) => {
           const isActive = activeApp?.id === app.id;
           const label = titles[app.id] ?? app.name;
           return (
-            <div
-              key={app.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '4px 10px',
-                borderRadius: 8,
-                background: isActive ? 'var(--tab-active)' : 'transparent',
-                border: '1px solid ' + (isActive ? 'var(--border)' : 'transparent'),
-                fontSize: 13,
-                color: 'var(--text)',
-                whiteSpace: 'nowrap',
-                transition: 'background 0.12s',
-                userSelect: 'none',
-              }}
-            >
+            <div key={app.id} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              paddingInline: 14,
+              borderRight: '1px solid var(--border)',
+              background: isActive ? 'var(--surface-2)' : 'transparent',
+              color: isActive ? 'var(--text)' : 'var(--text-2)',
+              cursor: 'default',
+              userSelect: 'none',
+              transition: 'background 0.12s',
+              position: 'relative',
+            }}>
+              {/* Active indicator line */}
+              {isActive && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0, left: 0, right: 0,
+                  height: 1,
+                  background: 'var(--text)',
+                }} />
+              )}
               <span
                 onClick={() => onSwitchApp(app.id)}
-                style={{ cursor: 'pointer', display: 'flex', gap: 5 }}
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  maxWidth: 140,
+                  overflow: 'hidden',
+                }}
               >
-                <span>{app.icon}</span>
-                <span style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{app.icon}</span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>
                   {label}
                 </span>
               </span>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCloseApp(app.id);
-                }}
-                title="Close"
+              <button
+                onClick={(e) => { e.stopPropagation(); onCloseApp(app.id); }}
                 style={{
+                  color: 'var(--text-3)',
                   fontSize: 16,
                   lineHeight: 1,
-                  opacity: 0.45,
-                  cursor: 'pointer',
-                  marginLeft: 2,
-                  transition: 'opacity 0.1s',
+                  flexShrink: 0,
+                  padding: '0 0 0 4px',
+                  transition: 'color 0.1s',
                 }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLElement).style.opacity = '1')
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLElement).style.opacity = '0.45')
-                }
-              >
-                ×
-              </span>
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-3)')}
+              >×</button>
             </div>
           );
         })}
       </div>
 
-      {/* Right side: active app name */}
-      {activeApp && (
-        <span
-          style={{ fontSize: 12, color: 'var(--text-secondary)', flexShrink: 0 }}
+      {/* Share */}
+      {hasApps && (
+        <button
+          onClick={handleShare}
+          style={{
+            paddingInline: 14,
+            height: '100%',
+            borderLeft: '1px solid var(--border)',
+            color: copied ? '#4ade80' : 'var(--text-2)',
+            fontSize: 12,
+            letterSpacing: '0.04em',
+            transition: 'color 0.2s',
+            whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={(e) => { if (!copied) e.currentTarget.style.color = 'var(--text)'; }}
+          onMouseLeave={(e) => { if (!copied) e.currentTarget.style.color = 'var(--text-2)'; }}
         >
-          {titles[activeApp.id] ?? activeApp.name}
-        </span>
+          {copied ? '✓ copied' : 'share'}
+        </button>
       )}
     </header>
   );

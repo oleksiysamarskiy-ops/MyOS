@@ -11,7 +11,7 @@ interface LauncherProps {
 }
 
 export function Launcher({ userApps, onOpenApp, onAddApp, onRemoveApp, lastOpenedId }: LauncherProps) {
-  const [query, setQuery]       = useState('');
+  const [query, setQuery]         = useState('');
   const [showModal, setShowModal] = useState(false);
 
   const lastApp = lastOpenedId ? userApps.find((a) => a.id === lastOpenedId) : null;
@@ -24,76 +24,110 @@ export function Launcher({ userApps, onOpenApp, onAddApp, onRemoveApp, lastOpene
     );
   }, [query, userApps]);
 
-  const today = new Date().toLocaleDateString('ru-RU', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  });
-
   return (
     <>
       <div style={{
-        flex: 1, overflowY: 'auto',
-        padding: '40px 24px 60px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32,
+        flex: 1,
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 32, fontWeight: 700, margin: 0, letterSpacing: -0.5 }}>MyOS</h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '6px 0 0', fontSize: 14 }}>{today}</p>
-        </div>
 
-        {/* Search + Add */}
-        <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 440 }}>
+        {/* Top toolbar */}
+        <div style={{
+          width: '100%',
+          maxWidth: 640,
+          padding: '32px 24px 0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Поиск приложений…"
+            placeholder="Search"
             style={{
-              flex: 1, padding: '9px 16px', borderRadius: 12,
-              border: '1px solid var(--border)', background: 'var(--card-bg)',
-              color: 'var(--text)', fontSize: 14, outline: 'none',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              flex: 1,
+              padding: '8px 12px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 4,
+              color: 'var(--text)',
+              outline: 'none',
+              fontSize: 13,
             }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--border-2)')}
+            onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
           />
           <button
             onClick={() => setShowModal(true)}
-            title="Добавить приложение"
             style={{
-              padding: '9px 16px', borderRadius: 12,
-              background: 'var(--accent)', color: '#fff',
-              border: 'none', fontWeight: 600, fontSize: 20,
-              cursor: 'pointer', lineHeight: 1,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+              padding: '8px 16px',
+              background: 'var(--text)',
+              color: 'var(--bg)',
+              borderRadius: 4,
+              fontWeight: 600,
+              fontSize: 13,
+              letterSpacing: '0.02em',
               flexShrink: 0,
+              transition: 'opacity 0.15s',
             }}
-          >+</button>
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+          >+ Add</button>
         </div>
 
         {/* Quick resume */}
         {lastApp && !query && (
-          <button
-            onClick={() => onOpenApp(lastApp)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '10px 20px', borderRadius: 12,
-              border: '1px solid var(--border)', background: 'var(--card-bg)',
-              color: 'var(--text)', fontSize: 14, cursor: 'pointer',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            }}
-          >
-            <span style={{ fontSize: 20 }}>{lastApp.icon}</span>
-            <span>Продолжить: <strong>{lastApp.name}</strong></span>
-            <span style={{ color: 'var(--text-secondary)' }}>→</span>
-          </button>
+          <div style={{
+            width: '100%',
+            maxWidth: 640,
+            padding: '20px 24px 0',
+          }}>
+            <button
+              onClick={() => onOpenApp(lastApp)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 14px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 4,
+                color: 'var(--text-2)',
+                fontSize: 12,
+                width: '100%',
+                textAlign: 'left',
+                transition: 'border-color 0.15s, color 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-2)';
+                e.currentTarget.style.color = 'var(--text)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.color = 'var(--text-2)';
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{lastApp.icon}</span>
+              <span>Continue — <span style={{ color: 'var(--text)' }}>{lastApp.name}</span></span>
+              <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-3)' }}>↵</span>
+            </button>
+          </div>
         )}
 
-        {/* App grid */}
+        {/* App grid or empty */}
         {userApps.length === 0 && !query ? (
           <EmptyState onAdd={() => setShowModal(true)} />
         ) : (
           <div style={{
+            width: '100%',
+            maxWidth: 640,
+            padding: '20px 24px 48px',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-            gap: 14, width: '100%', maxWidth: 760,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+            gap: 1,
           }}>
             {filtered.map((app) => (
               <AppCard
@@ -105,10 +139,12 @@ export function Launcher({ userApps, onOpenApp, onAddApp, onRemoveApp, lastOpene
             ))}
             {filtered.length === 0 && query && (
               <p style={{
-                gridColumn: '1/-1', textAlign: 'center',
-                color: 'var(--text-secondary)', fontSize: 14, padding: '32px 0',
+                gridColumn: '1/-1',
+                padding: '32px 0',
+                color: 'var(--text-3)',
+                fontSize: 13,
               }}>
-                Ничего не найдено по «{query}»
+                No results for "{query}"
               </p>
             )}
           </div>
@@ -130,87 +166,126 @@ export function Launcher({ userApps, onOpenApp, onAddApp, onRemoveApp, lastOpene
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-      padding: '48px 24px', textAlign: 'center',
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 16,
+      padding: 40,
+      textAlign: 'center',
     }}>
-      <span style={{ fontSize: 56 }}>📭</span>
-      <p style={{ margin: 0, fontWeight: 600, fontSize: 17 }}>Нет приложений</p>
-      <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14, maxWidth: 280, lineHeight: 1.5 }}>
-        Добавь первое приложение — оно откроется прямо здесь, без переадресации.
-      </p>
+      <div style={{
+        width: 48,
+        height: 48,
+        border: '1px solid var(--border-2)',
+        borderRadius: 4,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 20,
+        color: 'var(--text-3)',
+      }}>+</div>
+      <div>
+        <p style={{ color: 'var(--text)', fontWeight: 500, marginBottom: 6 }}>No apps yet</p>
+        <p style={{ color: 'var(--text-2)', fontSize: 12, maxWidth: 260, lineHeight: 1.6 }}>
+          Add any web app by URL. It will open here in a frame — no redirect.
+        </p>
+      </div>
       <button
         onClick={onAdd}
         style={{
-          marginTop: 8, padding: '11px 28px', borderRadius: 12,
-          background: 'var(--accent)', color: '#fff',
-          border: 'none', fontWeight: 600, fontSize: 15, cursor: 'pointer',
+          padding: '8px 20px',
+          background: 'var(--text)',
+          color: 'var(--bg)',
+          borderRadius: 4,
+          fontWeight: 600,
+          fontSize: 13,
+          transition: 'opacity 0.15s',
         }}
-      >+ Добавить приложение</button>
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+      >+ Add app</button>
     </div>
   );
 }
 
 // ─── AppCard ─────────────────────────────────────────────────────────────────
 
-function AppCard({
-  app, onClick, onRemove,
-}: { app: AppDefinition; onClick: () => void; onRemove: () => void }) {
-  const [hovered, setHovered]   = useState(false);
-  const [delHover, setDelHover] = useState(false);
+function AppCard({ app, onClick, onRemove }: { app: AppDefinition; onClick: () => void; onRemove: () => void }) {
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setDelHover(false); }}
-      style={{ position: 'relative' }}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative',
+        background: hovered ? 'var(--surface)' : 'transparent',
+        border: '1px solid ' + (hovered ? 'var(--border)' : 'transparent'),
+        borderRadius: 4,
+        transition: 'background 0.12s, border-color 0.12s',
+      }}
     >
       <button
         onClick={onClick}
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '14px 16px',
           width: '100%',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-          padding: '22px 14px', borderRadius: 18,
-          border: '1px solid var(--border)', background: 'var(--card-bg)',
-          cursor: 'pointer', textAlign: 'center', color: 'var(--text)',
-          transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
-          boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.06)',
-          transition: 'transform 0.15s, box-shadow 0.15s',
+          textAlign: 'left',
+          color: 'var(--text)',
         }}
       >
+        {/* Icon */}
         <span style={{
-          fontSize: 36, width: 60, height: 60,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          borderRadius: 16, background: app.color + '20', border: `1px solid ${app.color}40`,
+          fontSize: 22,
+          width: 38,
+          height: 38,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: app.color + '18',
+          borderRadius: 6,
+          flexShrink: 0,
         }}>{app.icon}</span>
 
-        <div>
-          <div style={{ fontWeight: 600, fontSize: 14 }}>{app.name}</div>
+        {/* Text */}
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{ fontWeight: 500, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {app.name}
+          </div>
           {app.description && (
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, lineHeight: 1.4 }}>
+            <div style={{ color: 'var(--text-2)', fontSize: 11, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {app.description}
             </div>
           )}
         </div>
-
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: app.color, opacity: 0.7 }} />
       </button>
 
-      {/* Delete button — visible on hover */}
+      {/* Remove */}
       {hovered && (
         <button
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          onMouseEnter={() => setDelHover(true)}
-          onMouseLeave={() => setDelHover(false)}
-          title="Удалить"
           style={{
-            position: 'absolute', top: 8, right: 8,
-            width: 22, height: 22, borderRadius: '50%',
-            background: delHover ? '#ff3b30' : 'var(--tab-active)',
-            color: delHover ? '#fff' : 'var(--text-secondary)',
-            border: '1px solid var(--border)',
-            fontSize: 14, lineHeight: 1, cursor: 'pointer',
+            position: 'absolute',
+            top: 8, right: 8,
+            width: 20, height: 20,
+            fontSize: 14,
+            color: 'var(--text-3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'background 0.12s, color 0.12s',
+            borderRadius: 3,
+            transition: 'color 0.1s, background 0.1s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--danger)';
+            e.currentTarget.style.background = 'rgba(224,82,82,0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-3)';
+            e.currentTarget.style.background = 'transparent';
           }}
         >×</button>
       )}

@@ -43,6 +43,7 @@ export default function App() {
         activeApp={activeApp ?? null}
         openApps={openApps}
         titles={state.titles}
+        hasApps={state.userApps.length > 0}
         onHome={() => appStore.goHome()}
         onSwitchApp={(id) => appStore.openApp(id)}
         onCloseApp={(id) => appStore.closeApp(id)}
