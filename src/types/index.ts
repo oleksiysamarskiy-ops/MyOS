@@ -3,25 +3,27 @@
 export interface AppDefinition {
   id: string;
   name: string;
-  /** emoji or absolute URL to an icon image */
+  /** emoji icon */
   icon: string;
-  /** URL of the deployed micro-app */
+  /** URL loaded in the iframe */
   url: string;
-  /** Accent colour for the card (hex / css var) */
+  /** Accent colour for the card */
   color: string;
   description?: string;
-  category?: 'productivity' | 'health' | 'learning' | 'tools';
 }
+
+/** A user-added app — same shape, persisted in localStorage */
+export type UserApp = AppDefinition;
 
 // ─── postMessage Bridge ────────────────────────────────────────────────────
 
 export type MyOSMessageType =
-  | 'MYOS_READY'   // MyOS → App : shell is mounted, you're inside MyOS
-  | 'APP_MOUNTED'  // App  → MyOS: app finished loading
-  | 'GO_HOME'      // App  → MyOS: navigate back to launcher
-  | 'PING'         // MyOS → App : keep-alive check
-  | 'PONG'         // App  → MyOS: response to PING
-  | 'SET_TITLE';   // App  → MyOS: update the tab label
+  | 'MYOS_READY'
+  | 'APP_MOUNTED'
+  | 'GO_HOME'
+  | 'PING'
+  | 'PONG'
+  | 'SET_TITLE';
 
 export interface MyOSMessage {
   source: 'myos' | 'app';
@@ -33,10 +35,9 @@ export interface MyOSMessage {
 // ─── Shell State ────────────────────────────────────────────────────────────
 
 export interface AppState {
-  /** ID of the currently visible app, or null → show Launcher */
   activeAppId: string | null;
-  /** Ordered list of open app IDs (for tab bar), max 5 */
   openApps: string[];
-  /** Dynamic title overrides sent via SET_TITLE */
   titles: Record<string, string>;
+  /** User-added apps, persisted */
+  userApps: UserApp[];
 }

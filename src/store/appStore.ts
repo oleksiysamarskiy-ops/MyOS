@@ -1,4 +1,4 @@
-import { AppState } from '../types';
+import { AppState, UserApp } from '../types';
 
 const STORAGE_KEY = 'myos_state';
 
@@ -6,6 +6,7 @@ const defaultState: AppState = {
   activeAppId: null,
   openApps: [],
   titles: {},
+  userApps: [],
 };
 
 function loadState(): AppState {
@@ -19,12 +20,10 @@ function loadState(): AppState {
 }
 
 function saveState(state: AppState): void {
-  // Don't persist titles — they reset on reload intentionally
-  const { titles: _titles, ...persisted } = state;
+  const { titles: _t, ...persisted } = state;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
 }
 
-// Lightweight singleton store — no Redux / Zustand needed for a personal shell
 class AppStore {
   private state: AppState = loadState();
   private listeners: Array<() => void> = [];
@@ -33,11 +32,37 @@ class AppStore {
     return this.state;
   }
 
+  // ─── App registry ───────────────────────────────────────────────────────
+
+  getApp(id: string): UserApp | undefined {
+    return this.state.userApps.find((a) => a.id === id);
+  }
+
+  addApp(app: UserApp): void {
+    if (this.state.userApps.find((a) => a.id === app.id)) return;
+    this.setState({ userApps: [...this.state.userApps, app] });
+  }
+
+  removeApp(appId: string): void {
+    const userApps = this.state.userApps.filter((a) => a.id !== appId);
+    // also close if open
+    const openApps = this.state.openApps.filter((id) => id !== appId);
+    const activeAppId =
+      this.state.activeAppId === appId
+        ? (openApps[openApps.length - 1] ?? null)
+        : this.state.activeAppId;
+    const titles = { ...this.state.titles };
+    delete titles[appId];
+    this.setState({ userApps, openApps, activeAppId, titles });
+  }
+
+  // ─── Navigation ────────────────────────────────────────────────────────
+
   openApp(appId: string): void {
     const already = this.state.openApps.includes(appId);
     const openApps = already
       ? this.state.openApps
-      : [...this.state.openApps.slice(-4), appId]; // keep max 5
+      : [...this.state.openApps.slice(-4), appId];
     this.setState({ activeAppId: appId, openApps });
   }
 
@@ -51,16 +76,16 @@ class AppStore {
       this.state.activeAppId === appId
         ? (openApps[openApps.length - 1] ?? null)
         : this.state.activeAppId;
-
     const titles = { ...this.state.titles };
     delete titles[appId];
-
     this.setState({ activeAppId, openApps, titles });
   }
 
   setTitle(appId: string, title: string): void {
     this.setState({ titles: { ...this.state.titles, [appId]: title } });
   }
+
+  // ───────────────────────────────────────────────────────────────────────
 
   private setState(partial: Partial<AppState>): void {
     this.state = { ...this.state, ...partial };
