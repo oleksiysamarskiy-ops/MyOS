@@ -1,73 +1,8 @@
 import { AppDefinition } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  App Registry
-//  Adding a new app = one entry here.  Everything else is automatic.
+//  Inline demo HTML — must be declared BEFORE APP_REGISTRY uses them
 // ─────────────────────────────────────────────────────────────────────────────
-
-export const APP_REGISTRY: AppDefinition[] = [
-  // ── Demo / built-in apps (work offline, no external URL needed) ──────────
-  {
-    id: 'demo-counter',
-    name: 'Counter Demo',
-    icon: '🔢',
-    // inline data-URL so the demo works without a backend
-    url: 'data:text/html;charset=utf-8,' + encodeURIComponent(DEMO_COUNTER_HTML),
-    color: '#007aff',
-    description: 'Демо: postMessage bridge',
-    category: 'tools',
-  },
-  {
-    id: 'demo-notes',
-    name: 'Quick Notes',
-    icon: '📝',
-    url: 'data:text/html;charset=utf-8,' + encodeURIComponent(DEMO_NOTES_HTML),
-    color: '#f59e0b',
-    description: 'Заметки прямо в iframe',
-    category: 'productivity',
-  },
-  // ── Your real apps (replace URLs with actual deployments) ───────────────
-  {
-    id: 'finance',
-    name: 'Finance',
-    icon: '💰',
-    url: 'https://finance.yourdomain.com',
-    color: '#22c55e',
-    description: 'Бюджет, расходы, цели',
-    category: 'productivity',
-  },
-  {
-    id: 'fitness',
-    name: 'Fitness',
-    icon: '🏋️',
-    url: 'https://fitness.yourdomain.com',
-    color: '#3b82f6',
-    description: 'Тренировки, питание, расписание',
-    category: 'health',
-  },
-  {
-    id: 'english',
-    name: 'English',
-    icon: '📚',
-    url: 'https://english.yourdomain.com',
-    color: '#a855f7',
-    description: 'Изучение английского',
-    category: 'learning',
-  },
-];
-
-export function getApp(id: string): AppDefinition | undefined {
-  return APP_REGISTRY.find((app) => app.id === id);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Inline demo apps (HTML strings)
-//  These use the MyOS SDK pattern so you can see the bridge in action.
-// ─────────────────────────────────────────────────────────────────────────────
-
-// NOTE: data: URLs can't use postMessage reliably in all browsers
-// (origin becomes "null").  The bridge gracefully handles this —
-// demo apps still work, bridge messages are optional.
 
 const DEMO_COUNTER_HTML = `<!doctype html>
 <html>
@@ -196,12 +131,11 @@ const DEMO_NOTES_HTML = `<!doctype html>
   const ta = document.getElementById('ta');
   const st = document.getElementById('st');
 
-  // Persist in sessionStorage (scoped to this tab session)
   ta.value = sessionStorage.getItem('myos_notes') || '';
 
   ta.addEventListener('input', () => {
     sessionStorage.setItem('myos_notes', ta.value);
-    const words = ta.value.trim().split(/\\s+/).filter(Boolean).length;
+    const words = ta.value.trim().split(/\s+/).filter(Boolean).length;
     st.textContent = words + ' words';
     send('SET_TITLE', { title: 'Notes (' + words + 'w)' });
   });
@@ -225,3 +159,59 @@ const DEMO_NOTES_HTML = `<!doctype html>
 </script>
 </body>
 </html>`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  App Registry — adding a new app = one entry here
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const APP_REGISTRY: AppDefinition[] = [
+  {
+    id: 'demo-counter',
+    name: 'Counter Demo',
+    icon: '🔢',
+    url: 'data:text/html;charset=utf-8,' + encodeURIComponent(DEMO_COUNTER_HTML),
+    color: '#007aff',
+    description: 'Демо: postMessage bridge',
+    category: 'tools',
+  },
+  {
+    id: 'demo-notes',
+    name: 'Quick Notes',
+    icon: '📝',
+    url: 'data:text/html;charset=utf-8,' + encodeURIComponent(DEMO_NOTES_HTML),
+    color: '#f59e0b',
+    description: 'Заметки прямо в iframe',
+    category: 'productivity',
+  },
+  {
+    id: 'finance',
+    name: 'Finance',
+    icon: '💰',
+    url: 'https://finance.yourdomain.com',
+    color: '#22c55e',
+    description: 'Бюджет, расходы, цели',
+    category: 'productivity',
+  },
+  {
+    id: 'fitness',
+    name: 'Fitness',
+    icon: '🏋️',
+    url: 'https://fitness.yourdomain.com',
+    color: '#3b82f6',
+    description: 'Тренировки, питание, расписание',
+    category: 'health',
+  },
+  {
+    id: 'english',
+    name: 'English',
+    icon: '📚',
+    url: 'https://english.yourdomain.com',
+    color: '#a855f7',
+    description: 'Изучение английского',
+    category: 'learning',
+  },
+];
+
+export function getApp(id: string): AppDefinition | undefined {
+  return APP_REGISTRY.find((app) => app.id === id);
+}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { AppDefinition } from '../types';
 import { APP_REGISTRY } from '../apps/registry';
 

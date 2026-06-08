@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { AppDefinition } from './types';
 import { appStore } from './store/appStore';
-import { getApp, APP_REGISTRY } from './apps/registry';
+import { getApp } from './apps/registry';
 import { Launcher } from './components/Launcher';
 import { AppFrame } from './components/AppFrame';
 import { TopBar } from './components/TopBar';
 
 export default function App() {
   const [state, setState] = useState(() => appStore.getState());
-  const searchRef = useRef<HTMLInputElement | null>(null);
 
   // Subscribe to store changes
   useEffect(() => appStore.subscribe(() => setState(appStore.getState())), []);
