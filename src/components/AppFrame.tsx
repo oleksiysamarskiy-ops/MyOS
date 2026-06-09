@@ -41,26 +41,36 @@ export function AppFrame({ app, onGoHome }: AppFrameProps) {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', background: 'var(--bg)' }}>
 
-      {/* Loading */}
+      {/* Loading overlay */}
       {status === 'loading' && (
         <div style={overlay}>
-          <div className="spinner" />
-          <span style={{ color: 'var(--text-3)', fontSize: 12 }}>{app.name}</span>
+          <div style={{
+            width: 48, height: 48,
+            background: app.color + '15',
+            borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, marginBottom: 4,
+            border: '1px solid ' + app.color + '20',
+          }}>{app.icon}</div>
+          <div className="spinner" style={{ marginTop: 8 }} />
+          <span style={{ color: 'var(--text-3)', fontSize: 12, marginTop: 4 }}>Opening {app.name}…</span>
         </div>
       )}
 
-      {/* Error */}
+      {/* Error state */}
       {status === 'error' && (
         <div style={{ ...overlay, gap: 20 }}>
           <div style={{
-            width: 40, height: 40, borderRadius: 4,
+            width: 44, height: 44, borderRadius: 8,
             border: '1px solid var(--border-2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-3)', fontSize: 20,
+            color: 'var(--text-3)', fontSize: 22,
           }}>!</div>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontWeight: 500, marginBottom: 4 }}>Failed to load</p>
-            <p style={{ color: 'var(--text-2)', fontSize: 12 }}>{app.url}</p>
+            <p style={{ fontWeight: 500, marginBottom: 6, color: 'var(--text)' }}>Failed to load</p>
+            <p style={{ color: 'var(--text-2)', fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }}>
+              {app.url.replace(/^https?:\/\//, '')}
+            </p>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <Btn onClick={handleReload}>Retry</Btn>
@@ -80,7 +90,7 @@ export function AppFrame({ app, onGoHome }: AppFrameProps) {
         style={{
           width: '100%', height: '100%', border: 'none', display: 'block',
           opacity: status === 'loading' ? 0 : 1,
-          transition: 'opacity 0.2s',
+          transition: 'opacity 0.25s ease',
         }}
       />
     </div>
@@ -90,7 +100,7 @@ export function AppFrame({ app, onGoHome }: AppFrameProps) {
 const overlay: React.CSSProperties = {
   position: 'absolute', inset: 0,
   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-  background: 'var(--bg)', zIndex: 10, gap: 12,
+  background: 'var(--bg)', zIndex: 10, gap: 10,
 };
 
 function Btn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
@@ -98,15 +108,23 @@ function Btn({ onClick, children }: { onClick: () => void; children: React.React
     <button
       onClick={onClick}
       style={{
-        padding: '7px 16px',
+        padding: '8px 18px',
         border: '1px solid var(--border)',
-        borderRadius: 4,
+        borderRadius: 6,
         color: 'var(--text-2)',
         fontSize: 12,
-        transition: 'color 0.15s, border-color 0.15s',
+        transition: 'color 0.15s, border-color 0.15s, background 0.15s',
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.borderColor = 'var(--border-2)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = 'var(--text)';
+        e.currentTarget.style.borderColor = 'var(--border-2)';
+        e.currentTarget.style.background = 'var(--surface-2)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = 'var(--text-2)';
+        e.currentTarget.style.borderColor = 'var(--border)';
+        e.currentTarget.style.background = 'transparent';
+      }}
     >{children}</button>
   );
 }
